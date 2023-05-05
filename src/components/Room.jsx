@@ -1,6 +1,5 @@
 import "../styles/room.scss";
 
-import { db } from "../firebase-config";
 import {
   collection,
   where,
@@ -14,8 +13,9 @@ import {
   serverTimestamp,
   deleteDoc,
 } from "firebase/firestore";
+
 import { useState, useEffect, useRef } from "react";
-import { firebaseAuth } from "../firebase-config";
+import { db, firebaseAuth } from "../firebase-config";
 
 /**
  * React component for the chat room page.
@@ -25,6 +25,8 @@ import { firebaseAuth } from "../firebase-config";
 function Room(props) {
   const { roomCode, setCurrentRoom } = props;
   const roomsRef = collection(db, "rooms");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isHost, setIsHost] = useState(false);
 
   /**
    * React hooks for retrieving and updating state.
@@ -102,6 +104,24 @@ function Room(props) {
     autoSuggestChatCommands(e);
   };
 
+  const checkIfHost = async () => {
+    if (isAdmin === true) {
+      setIsHost(true);
+    } else {
+      const q = query(roomsRef, where("roomCode", "==", roomCode));
+      const room = await getDocs(q);
+      const roomData = room.docs[0].data();
+      const host = roomData.host;
+      const user = firebaseAuth.currentUser;
+      if (user) {
+        const uid = user.uid;
+        if (uid === host) {
+          setIsHost(true);
+        }
+      }
+    }
+  };
+
   /**
    * Function to retrieve messages and room information from Firebase.
    */
@@ -120,17 +140,22 @@ function Room(props) {
     return () => unsubscribe();
   }, []);
 
-  /**
-   * Function to check if the current user is the host of the room.
-   *
-   * @returns {boolean} True if the current user is the host, false otherwise.
-   */
-  const checkIfHost = async () => {
-    const room = await getDocs(roomsRef);
-    const roomData = room.docs[0].data();
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const user = firebaseAuth.currentUser;
+      if (user) {
+        const uid = user.uid;
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("uid", "==", uid));
+        const userDoc = await getDocs(q);
+        const userData = userDoc.docs[0].data();
+        setIsAdmin(userData.isAdmin);
+      }
+    };
 
-    return firebaseAuth.currentUser.uid === roomData.host;
-  };
+    checkAdmin();
+    checkIfHost();
+  }, [firebaseAuth.currentUser]);
 
   /**
    * Function to handle chat commands.
@@ -158,12 +183,11 @@ function Room(props) {
 
     const terminateRoom = async () => {
       const roomRef = collection(db, "rooms");
-      const room = await getDoc(
-        query(roomRef, where("roomCode", "==", roomCode))
-      );
+      const q = query(roomRef, where("roomCode", "==", roomCode));
+      const room = await getDocs(q);
 
       try {
-        deleteDoc(doc(roomRef, room));
+        deleteDoc(doc(roomRef, room.docs[0].id));
         addSystemMessageToChatDiv(
           "Room terminated! You may now leave the room."
         );
@@ -179,11 +203,9 @@ function Room(props) {
       return;
     }
 
-    const isHost = checkIfHost();
-
     switch (message) {
       case "/clear":
-        if (!isHost) {
+        if (isHost === false) {
           addSystemMessageToChatDiv("Only the host can clear the chat!");
           break;
         }
@@ -229,6 +251,8 @@ function Room(props) {
   const sendMessage = async (e) => {
     e.preventDefault();
 
+    checkIfHost();
+
     const wasChatCommand = chatCommands(formValue);
     /**
      * Back in the sendMessage function, if wasChatCommand is true, meaning a chat command was executed, the function ends by setting the formValue state to an empty string and returning nothing.
@@ -248,7 +272,9 @@ function Room(props) {
       return;
     }
 
-    const room = await getDocs(query(roomsRef, where("roomCode", "==", roomCode)));
+    const room = await getDocs(
+      query(roomsRef, where("roomCode", "==", roomCode))
+    );
 
     if (room.docs.length === 0) {
       alert("Room does not exist or it has been terminated!");
@@ -313,7 +339,8 @@ function Room(props) {
 function ChatMessage(props) {
   const { text, uid, photoURL } = props.message;
 
-  const messageClass = uid === firebaseAuth.currentUser.uid ? "sent" : "received";
+  const messageClass =
+    uid === firebaseAuth.currentUser.uid ? "sent" : "received";
 
   return (
     <div className={`message ${messageClass}`}>

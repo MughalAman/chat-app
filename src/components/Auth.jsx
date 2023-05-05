@@ -1,6 +1,6 @@
 import "../styles/signin.scss";
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, signInWithPopup} from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup, createUserWithEmailAndPassword} from "firebase/auth";
 import { firebaseAuth, googleAuthProvider } from "../firebase-config";
 import Cookies from 'universal-cookie';
 

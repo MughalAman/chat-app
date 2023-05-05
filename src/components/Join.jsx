@@ -1,7 +1,7 @@
 import '../styles/join.scss'
 import { useState, useEffect } from 'react'
-import { db } from '../firebase-config';
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db, firebaseAuth } from '../firebase-config';
+import { collection, query, where, onSnapshot, getDocs } from "firebase/firestore";
 
 
 /**
@@ -12,6 +12,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 function Join(props) {
   const { setRoom } = props;
   const roomsRef = collection(db, "rooms");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   /**
    * An array state that stores the list of public rooms.
@@ -25,12 +26,32 @@ function Join(props) {
    */
   const [roomCode, setRoomCode] = useState(undefined);
 
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const user = firebaseAuth.currentUser;
+      if (user) {
+        const uid = user.uid;
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("uid", "==", uid));
+        const userDoc = await getDocs(q);
+        const userData = userDoc.docs[0].data();
+        setIsAdmin(userData.isAdmin);
+      }
+    }
+    checkAdmin();
+  }, [firebaseAuth.currentUser]);
+
+
 useEffect(() => {
     /**
    * A Firestore query that gets all public rooms.
    * @type {query<DocumentData>}
    */
-    const q = query(roomsRef, where("isPrivate", "==", false));
+    let q = query(roomsRef, where("isPrivate", "==", false));
+
+    if (isAdmin === true) {
+      q = query(roomsRef);
+    }
 
     /**
      * A listener function that updates the publicRooms state with the latest data from the Firestore query.
@@ -48,7 +69,7 @@ useEffect(() => {
     return () => {
       unsubscribe();
     }
-  }, []);
+  }, [isAdmin]);
 
 const handleJoin = (e) => {
     e.preventDefault();
@@ -70,7 +91,7 @@ const handleJoin = (e) => {
         <div id="public-rooms">
           <h2>Public Rooms</h2>
           <ul>
-            {publicRooms.map((room) => <li key={room.id}><button onClick={() => {setRoom(room.roomCode)}}>{room.roomCode}</button></li>)}
+            {publicRooms.map((room) => <li key={room.id}><button onClick={() => {setRoom(room.roomCode)}} style={{color: room.isPrivate ? 'red' : 'white', background: room.isPrivate && 'black', opacity: room.isPrivate && 0.7}}>{room.roomCode}</button></li>)}
           </ul>
         </div>
         <input type="text" placeholder="Enter Room Code" onChange={(e) => setRoomCode(e.target.value)} />

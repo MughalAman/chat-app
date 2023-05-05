@@ -1,6 +1,6 @@
 import '../styles/host.scss'
 import { useState } from 'react'
-import { collection, query, addDoc, where } from "firebase/firestore";
+import { collection, query, addDoc, where, getDocs } from "firebase/firestore";
 import { firebaseAuth, db } from "../firebase-config";
 
 /**
@@ -35,14 +35,11 @@ function Host(props) {
      * @param {string} code - The room code to check.
      * @returns {Promise<boolean>} True if a room with the given code already exists, false otherwise.
      */
-    const checkRoomCode =  (code) => {
+    const checkRoomCode = async (code) => {
         const queryRooms = query(roomsRef, where("roomCode", "==", code));
-        if (queryRooms === undefined) {
-            return false;
-        }else {
-            return true;
-        }
-    }
+        const snapshot = await getDocs(queryRooms);
+        return snapshot.size > 0;
+      };
 
     /**
      * Handles the form submission to host a new room.
@@ -52,18 +49,18 @@ function Host(props) {
     const handleHost = async (e) => {
         e.preventDefault();
         let code = generateRoomCode();
-        while (checkRoomCode(code) === true){
-            code = generateRoomCode();
+        let counter = 0;
+        while (await checkRoomCode(code)) {
+          code = generateRoomCode() + counter;
+          counter++;
         }
-
         await addDoc(roomsRef, {
-            roomCode: code,
-            isPrivate: roomType === 'private' ? true : false,
-            host: firebaseAuth.currentUser.uid,
+          roomCode: code,
+          isPrivate: roomType === 'private' ? true : false,
+          host: firebaseAuth.currentUser.uid,
         });
-
         setRoom(code);
-    }
+      };
 
     return (
         <div>
