@@ -16,7 +16,7 @@ Visit the [live site](https://chat-app-ao9o.onrender.com/) and test it out!
 
 ## How to run
 ### Environment variables
-You can get the values for these variables from the firebase console after creating a project there.
+You can get the values for these variables from the firebase console after creating a project there. [Firebase](https://firebase.google.com/)
 ```bash
 VITE_FIREBASE_API_KEY=YOUR_API_KEY
 VITE_FIREBASE_AUTH_DOMAIN=YOUR_AUTH_DOMAIN
@@ -37,7 +37,7 @@ npm run dev
 ```
 
 ## Build the app
-Just push the changes and the app will be built automatically
+Make a pull request and the app will be built and deployed to [render](https://render.com/).
 
 ## Credits
 The team behind this project:
