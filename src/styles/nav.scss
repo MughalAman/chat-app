@@ -1,0 +1,33 @@
+#nav-bar-container {
+    min-width: 100vw;
+}
+
+#nav-bar-container nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    margin: auto;
+    gap: 1rem;
+    background-color: #3e44ff;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+#nav-bar-container-center {
+    flex: 1;
+}
+
+#nav-bar-container-right button {
+    background-color: #242424;
+    color: #ffffff;
+    border: none;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#nav-bar-container-left:hover {
+    cursor: pointer;
+}

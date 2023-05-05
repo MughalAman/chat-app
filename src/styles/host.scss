@@ -1,0 +1,48 @@
+#host-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+#host-container input {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-size: 1rem;
+}
+
+#host-container button {
+    background-color: #3E44FF;
+    color: #ffffff;
+    border: none;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+}
+
+#host-container button:hover {
+    cursor: pointer;
+}
+
+#host-container form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+}
+
+#host-options {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    margin: auto;
+    gap: 1rem;
+}
+
+#host-options input:checked + label {
+    color: orangered;
+}

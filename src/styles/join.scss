@@ -1,0 +1,46 @@
+#join-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+#join-container input {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-size: 1rem;
+}
+
+#join-container button {
+    background-color: #3E44FF;
+    color: #ffffff;
+    border: none;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+}
+
+#join-container button:hover {
+    cursor: pointer;
+}
+
+#public-rooms {
+
+    ul {
+
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        overflow: hidden;
+
+        li {
+            padding: 1rem;
+        }
+
+    } 
+
+} 
